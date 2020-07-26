@@ -1,0 +1,61 @@
+---
+title: "Data product week 4 assignment"
+author: "Nordine RAJAOUI"
+date: "26/07/2020"
+output:
+  slidy_presentation: default
+  powerpoint_presentation: default
+  beamer_presentation: default
+always_allow_html: yes
+---
+
+
+## Coursera Reproducible Pitch
+
+This is a task for the data science coursera course about developing data products for week 4. As part of this, I have created a shiny app and deployed it on the shiny server. The link is https://nordinestatisticsaccount.shinyapps.io/kmeansexample/. The code can be found at https://github.com/Nordine67200/DataProductWeek4/.
+
+## Overview
+
+K-means clustering is one of the simplest and popular unsupervised machine learning algorithms. Typically, unsupervised algorithms make inferences from datasets using only input vectors without referring to known, or labelled, outcomes.
+We're going to work with mtcars data.The shiny application will show you, for the numbers of centroids selected,  the clusters chosen by the kmeans method. 
+
+
+## UI Code
+```{r , warning=FALSE, message=FALSE, eval=FALSE}
+library(shiny)
+# Define UI for application that draws a histogram
+shinyUI(fluidPage(
+    # Application title
+    titlePanel("K Means applied to mtcars data"),
+    # Sidebar with a slider input for number of bins
+    sidebarLayout(
+        sidebarPanel(
+           sliderInput("sliderKM", "Choose the number of clusters:", 2, 10, value=2)
+        ),
+        # Show a plot of the clusters
+        mainPanel(
+            plotOutput("plot1", brush = brushOpts(id="brush1"))
+        )
+    )
+))
+```
+
+## Server Code
+```{r, warning=FALSE, message=FALSE, eval=FALSE}
+library(shiny)
+library(miniUI)
+library(factoextra)
+library(tidyverse)
+# Define server logic required to draw a histogram
+shinyServer(function(input, output) {
+    mtcars_num <- mtcars %>% 
+        dplyr::select(mpg,disp:qsec) 
+    mtcars_num_sc <- scale(mtcars_num)
+    km.out <- reactive({
+        kmeans(mtcars_num_sc,centers=input$sliderKM,nstart = 25)
+        })
+    output$plot1 = renderPlot({
+        fviz_cluster(km.out(), mtcars_num_sc, ellipse.type = "norm")
+    })
+})
+```
